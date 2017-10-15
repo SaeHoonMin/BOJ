@@ -15,8 +15,9 @@ using namespace::std;
 int main(void)
 {
 	/*
-	10816 : 숫자 카드
+	10816 : 숫자 카드2
 
+	걍 map에다 넣고 카운트 세주면 됨 .
 	*/
 	map<int, int> mymap;
 	map<int, int>::iterator it;
