@@ -10,46 +10,63 @@ using namespace::std;
 #define LEFT 2
 #define RIGHT 3
 
-int **board;
-
 int n;
+int dMax[11];
 
-void doJob(int dir, int ** arr)
+typedef struct Board {
+	int t[20][20];
+
+	void doJob(int dir);
+	void print();//for testing
+	int getMax();
+}Board;
+
+Board board;
+
+void Board::print()
 {
+	for (int i = 0; i < n; i++)
+	{
+		for (int j = 0; j < n; j++)
+			printf("%d ", t[i][j]);
+		printf("\n");
+	}
+}
+
+int Board::getMax()
+{
+	int ret = 0;
+	for (int i = 0; i < n; i++)
+	{
+		for (int j = 0; j < n; j++)
+			ret = max(ret, t[i][j]);
+	}
+	return ret;
+}
+
+void Board::doJob(int dir)
+{
+	int height[20] = { 0, };
+	int t2[20][20] = { 0, };
+
+
 	if (dir == UP)
 	{
 		for (int i = 0; i < n; i++)
 		{
 			for (int j = 0; j < n; j++)
 			{
-				//0이면 가장 가까운 수 찾아서 끌어내린다
-				if (!arr[i][j])
+				//arr[i][j]가 있으면  height[j] 
+				if (t[i][j])
 				{
-					int h = i + 1;
-					while (h<n && !arr[h][j])
+					if (t[i][j] == t2[height[j]][j])
 					{
-						h++;
+						t2[height[j]++][j] += t[i][j];
 					}
-					if (h < n)
-					{
-						arr[i][j] = arr[h][j];
-						arr[h][j] = 0;
-					}
-				}
-
-				if (arr[i][j] != 0)
-				{
-					//가장 가까운 0아닌 수 찾아서 합친다
-					int h = i + 1;
-					while (h<n && !arr[h][j])
-					{
-						h++;
-					}
-					if (h<n && arr[i][j] == arr[h][j])
-					{
-						arr[i][j] += arr[h][j];
-						arr[h][j] = 0;
-					}
+					else if (!t2[height[j]][j]) //0인 경우
+						t2[height[j]][j] = t[i][j];
+					else //서로 다른 경우
+						t2[++height[j]][j] = t[i][j];
 				}
 			}
 		}//for i 
@@ -60,191 +77,151 @@ void doJob(int dir, int ** arr)
 		{
 			for (int i = 0; i < n; i++)
 			{
-				//0이면 가장 가까운 수 찾아서 끌어내린다
-				if (!arr[i][j])
+				//t[i][j]가 있으면 
+				if (t[i][j])
 				{
-					int w = j + 1;
-					while (w<n && !arr[i][w])
+					if (t[i][j] == t2[i][height[i]])
 					{
-						w++;
+						t2[i][height[i]++] += t[i][j];
 					}
-					if (w < n)
-					{
-						arr[i][j] = arr[i][w];
-						arr[i][w] = 0;
-					}
-				}
-
-				if (arr[i][j] != 0)
-				{
-					//가장 가까운 0아닌 수 찾아서 합친다
-					int w = j + 1;
-					while (w<n && !arr[i][w])
-					{
-						w++;
-					}
-					if (w<n && arr[i][j] == arr[i][w])
-					{
-						arr[i][j] += arr[i][w];
-						arr[i][w] = 0;
-					}
+					else if (!t2[i][height[i]]) //0인 경우
+						t2[i][height[i]] = t[i][j];
+					else //서로 다른 경우
+						t2[i][++height[i]] = t[i][j];
 				}
 			}
 		}
 	}
 	else if (dir == RIGHT)
 	{
+		for (int i = 0; i < 20; i++)
+			height[i] = n - 1;
+
 		for (int j = n - 1; j >= 0; j--)
 		{
 			for (int i = 0; i < n; i++)
 			{
-				//0이면 가장 가까운 수 찾아서 끌어내린다
-				if (!arr[i][j])
+				//t[i][j]가 있으면 
+				if (t[i][j])
 				{
-					int w = j - 1;
-					while (w >= 0 && !arr[i][w])
+					if (t[i][j] == t2[i][height[i]])
 					{
-						w--;
+						t2[i][height[i]--] += t[i][j];
 					}
-					if (w >= 0)
-					{
-						arr[i][j] = arr[i][w];
-						arr[i][w] = 0;
-					}
-				}
-
-				if (arr[i][j] != 0)
-				{
-					//가장 가까운 0아닌 수 찾아서 합친다
-					int w = j - 1;
-					while (w >= 0 && !arr[i][w])
-					{
-						w--;
-					}
-					if (w >= 0 && arr[i][j] == arr[i][w])
-					{
-						arr[i][j] += arr[i][w];
-						arr[i][w] = 0;
-					}
+					else if (!t2[i][height[i]]) //0인 경우
+						t2[i][height[i]] = t[i][j];
+					else //서로 다른 경우
+						t2[i][--height[i]] = t[i][j];
 				}
 			}
 		}
 	}
 	else //DOWN
 	{
+		for (int i = 0; i < 20; i++)
+			height[i] = n - 1;
+
 		for (int i = n - 1; i >= 0; i--)
 		{
 			for (int j = 0; j < n; j++)
 			{
-				//0이면 가장 가까운 수 찾아서 끌어내린다
-				if (!arr[i][j])
+				//arr[i][j]가 있으면  height[j] 
+				if (t[i][j])
 				{
-					int h = i - 1;
-					while (h >= 0 && !arr[h][j])
+					if (t[i][j] == t2[height[j]][j])
 					{
-						h--;
+						t2[height[j]--][j] += t[i][j];
 					}
-					if (h >= 0)
-					{
-						arr[i][j] = arr[h][j];
-						arr[h][j] = 0;
-					}
-				}
-
-				if (arr[i][j] != 0)
-				{
-					//가장 가까운 0아닌 수 찾아서 합친다
-					int h = i - 1;
-					while (h >= 0 && !arr[h][j])
-					{
-						h--;
-					}
-					if (h >= 0 && arr[i][j] == arr[h][j])
-					{
-						arr[i][j] += arr[h][j];
-						arr[h][j] = 0;
-					}
+					else if (!t2[height[j]][j]) //0인 경우
+						t2[height[j]][j] = t[i][j];
+					else //서로 다른 경우
+						t2[--height[j]][j] = t[i][j];
 				}
 			}
 		}//for i 
 
 	}
+
+	memcpy(t, t2, sizeof(t2));
+
 }
 
-int solve(int dir, int ** arr, int cnt)
+bool same(int tmp[20][20])
 {
+	for (int i = 0;i < n;i++)
+	{
+		for (int j = 0; j < n;j++)
+		{
+			if (tmp[i][j] != board.t[i][j])
+				return false;
+		}
+	}
+	return true;
+}
+
+void solve(int cnt)
+{
+	int c = board.getMax();
+
+	//현재단계에서의 더이상의 분기는 최대값 도달이 불가능하다고 판단될 경우
+	if (c <= dMax[cnt])
+	{
+		return;
+	}
 	if (cnt == 0)//종료
 	{
-		int ret = -1;
-		for (int i = 0; i < n; i++)
-			for (int j = 0; j < n;j++)
-				ret = max(ret, arr[i][j]);
-		return ret;
-	}
-
-	int **currentArr;
-
-
-	currentArr = (int**)malloc(sizeof(int*)*n);
-	for (int i = 0;i < n; i++)
-	{
-		currentArr[i] = (int*)malloc(sizeof(int)*n);
-		if (dir == -1)
-			memcpy(currentArr[i], board[i], sizeof(int)*n);
-		else
-			memcpy(currentArr[i], arr[i], sizeof(int)*n);
-	}
-
-	//currentArr가지고 dir만큼 변형
-	if (dir != -1)
-	{
-		cnt--;
-		doJob(dir, currentArr);
+		if (c > dMax[cnt])
+		{
+			for (int i = 0; i < 10; i++)
+			{
+				dMax[i] = c;
+				c /= 2;
+			}
+		}
+		return;
 	}
 
 
-	int value = -1;
+	int temp[20][20];
+	memcpy(temp, board.t, sizeof(temp));
+
 	for (int i = 0; i < 4; i++)
 	{
-		value = max(solve(i, currentArr, cnt), value);
+		//현재단계에서 더이상 특정 방향으로의 입력은 의미 없는 경우
+		board.doJob(i);
+		if (same(temp))
+			continue;
+		solve(cnt - 1);
+		memcpy(board.t, temp, sizeof(temp));
 	}
 
-	for (int i = 0;i < n; i++)
-	{
-		free(currentArr[i]);
-	}
-	free(currentArr);
-
-	return value;
 }
 
 int main(void)
 {
 	/*
-		12100 : 2048 ( EASY )
+	12100 2048 ( EASY )
 
-		완전탐색으로 구현..
+	알고리즘 개선으로 4ms 향상..
+
 	*/
 	scanf("%d", &n);
-
-
-	board = (int**)malloc(sizeof(int*)*n);
-	for (int i = 0;i < n; i++)
-	{
-		board[i] = (int*)malloc(sizeof(int)*n);
-	}
-
 
 	for (int i = 0;i < n; i++)
 	{
 		for (int j = 0; j < n; j++)
 		{
-			scanf("%d", &board[i][j]);
+			scanf("%d", &board.t[i][j]);
 		}
 	}
 
-	int answer = solve(-1, NULL, 5);
 
-	printf("%d", answer);
+	solve(5);
+
+	if (n == 1)
+		printf("%d", board.t[0][0]);
+	else
+		printf("%d", dMax[0]);
+
 	return 0;
 }
